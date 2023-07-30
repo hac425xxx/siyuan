@@ -584,6 +584,16 @@ interface IConfig {
             skipTlsVerify: boolean
             timeout: number
         }
+        s3v: {
+            endpoint: string
+            pathStyle: boolean
+            accessKey: string
+            secretKey: string
+            bucket: string
+            region: string
+            skipTlsVerify: boolean
+            timeout: number
+        }
         webdav: {
             endpoint: string
             username: string

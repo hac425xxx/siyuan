@@ -26,6 +26,7 @@ type Sync struct {
 	GenerateConflictDoc bool    `json:"generateConflictDoc"` // 云端同步冲突时是否生成冲突文档
 	Provider            int     `json:"provider"`            // 云端存储服务提供者
 	S3                  *S3     `json:"s3"`                  // S3 对象存储服务配置
+	S3V                 *S3     `json:"s3v"`                  // S3 对象存储服务配置
 	WebDAV              *WebDAV `json:"webdav"`              // WebDAV 服务配置
 }
 
@@ -63,6 +64,7 @@ const (
 	ProviderSiYuan = 0 // ProviderSiYuan 为思源官方提供的云端存储服务
 	ProviderS3     = 2 // ProviderS3 为 S3 协议对象存储提供的云端存储服务
 	ProviderWebDAV = 3 // ProviderWebDAV 为 WebDAV 协议提供的云端存储服务
+	ProviderS3V = 4 // ProviderWebDAV 为 WebDAV 协议提供的云端存储服务
 )
 
 func ProviderToStr(provider int) string {
@@ -71,6 +73,8 @@ func ProviderToStr(provider int) string {
 		return "SiYuan"
 	case ProviderS3:
 		return "S3"
+	case ProviderS3V:
+		return "S3V"
 	case ProviderWebDAV:
 		return "WebDAV"
 	}

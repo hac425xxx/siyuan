@@ -1521,6 +1521,10 @@ func newRepository() (ret *dejavu.Repo, err error) {
 		s3HTTPClient := &http.Client{Transport: httpclient.NewTransport(cloudConf.S3.SkipTlsVerify)}
 		s3HTTPClient.Timeout = time.Duration(cloudConf.S3.Timeout) * time.Second
 		cloudRepo = cloud.NewS3(&cloud.BaseCloud{Conf: cloudConf}, s3HTTPClient)
+	case conf.ProviderS3V:
+		s3HTTPClient := &http.Client{Transport: httpclient.NewTransport(cloudConf.S3.SkipTlsVerify)}
+		s3HTTPClient.Timeout = time.Duration(cloudConf.S3.Timeout) * time.Second
+		cloudRepo = cloud.NewS3(&cloud.BaseCloud{Conf: cloudConf}, s3HTTPClient)
 	case conf.ProviderWebDAV:
 		webdavClient := gowebdav.NewClient(cloudConf.WebDAV.Endpoint, cloudConf.WebDAV.Username, cloudConf.WebDAV.Password)
 		a := cloudConf.WebDAV.Username + ":" + cloudConf.WebDAV.Password
@@ -1771,6 +1775,17 @@ func buildCloudConf() (ret *cloud.Conf, err error) {
 			PathStyle:     Conf.Sync.S3.PathStyle,
 			SkipTlsVerify: Conf.Sync.S3.SkipTlsVerify,
 			Timeout:       Conf.Sync.S3.Timeout,
+		}
+	case conf.ProviderS3V:
+		ret.S3 = &cloud.ConfS3{
+			Endpoint:      Conf.Sync.S3V.Endpoint,
+			AccessKey:     Conf.Sync.S3V.AccessKey,
+			SecretKey:     Conf.Sync.S3V.SecretKey,
+			Bucket:        Conf.Sync.S3V.Bucket,
+			Region:        Conf.Sync.S3V.Region,
+			PathStyle:     Conf.Sync.S3V.PathStyle,
+			SkipTlsVerify: Conf.Sync.S3V.SkipTlsVerify,
+			Timeout:       Conf.Sync.S3V.Timeout,
 		}
 	case conf.ProviderWebDAV:
 		ret.WebDAV = &cloud.ConfWebDAV{

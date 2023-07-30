@@ -137,6 +137,63 @@ const renderProvider = (provider: number) => {
         <option ${window.siyuan.config.sync.webdav.skipTlsVerify ? "selected" : ""} value="true">Skip</option>
     </select>
 </label>`;
+    } else  if (provider === 4) {
+        return `<div class="b3-label b3-label--inner">
+    ${window.siyuan.languages.syncThirdPartyProviderS3Intro}
+    <div class="fn__hr"></div>
+    <em>${window.siyuan.languages.featureBetaStage}</em>
+    <div class="fn__hr"></div>
+    ${window.siyuan.languages.syncThirdPartyProviderTip}
+</div>
+<label class="b3-label b3-label--noborder fn__flex config__item">
+    <div class="fn__flex-center fn__size200">Endpoint</div>
+    <div class="fn__space"></div>
+    <input id="endpoint" class="b3-text-field fn__block" value="${window.siyuan.config.sync.s3v.endpoint}">
+</label>
+<label class="b3-label b3-label--noborder fn__flex config__item">
+    <div class="fn__flex-center fn__size200">Access Key</div>
+    <div class="fn__space"></div>
+    <input id="accessKey" class="b3-text-field fn__block" value="${window.siyuan.config.sync.s3v.accessKey}">
+</label>
+<label class="b3-label b3-label--noborder fn__flex config__item">
+    <div class="fn__flex-center fn__size200">Secret Key</div>
+    <div class="fn__space"></div>
+    <div class="b3-form__icona fn__block">
+        <input id="secretKey" type="password" class="b3-text-field b3-form__icona-input" value="${window.siyuan.config.sync.s3v.secretKey}">
+        <svg class="b3-form__icona-icon"><use xlink:href="#iconEye"></use></svg>
+    </div>
+</label>
+<label class="b3-label b3-label--noborder fn__flex config__item">
+    <div class="fn__flex-center fn__size200">Bucket</div>
+    <div class="fn__space"></div>
+    <input id="bucket" class="b3-text-field fn__block" value="${window.siyuan.config.sync.s3v.bucket}">
+</label>
+<label class="b3-label b3-label--noborder fn__flex config__item">
+    <div class="fn__flex-center fn__size200">Region</div>
+    <div class="fn__space"></div>
+    <input id="region" class="b3-text-field fn__block" value="${window.siyuan.config.sync.s3v.region}">
+</label>
+<label class="b3-label b3-label--noborder fn__flex config__item">
+    <div class="fn__flex-center fn__size200">Timeout (s)</div>
+    <div class="fn__space"></div>
+    <input id="timeout" class="b3-text-field fn__block" type="number" min="7" max="300" value="${window.siyuan.config.sync.s3v.timeout}">
+</label>
+<label class="b3-label b3-label--noborder fn__flex config__item">
+    <div class="fn__flex-center fn__size200">Addressing</div>
+    <div class="fn__space"></div>
+    <select class="b3-select fn__block" id="pathStyle">
+        <option ${window.siyuan.config.sync.s3v.pathStyle ? "" : "selected"} value="false">Virtual-hosted-style</option>
+        <option ${window.siyuan.config.sync.s3v.pathStyle ? "selected" : ""} value="true">Path-style</option>
+    </select>
+</label>
+<label class="b3-label b3-label--noborder fn__flex config__item">
+    <div class="fn__flex-center fn__size200">TLS Verify</div>
+    <div class="fn__space"></div>
+    <select class="b3-select fn__block" id="s3SkipTlsVerify">
+        <option ${window.siyuan.config.sync.s3v.skipTlsVerify ? "" : "selected"} value="false">Verify</option>
+        <option ${window.siyuan.config.sync.s3v.skipTlsVerify ? "selected" : ""} value="true">Skip</option>
+    </select>
+</label>`;
     }
     return "";
 };
@@ -249,6 +306,32 @@ const bindProviderEvent = () => {
                 fetchPost("/api/sync/setSyncProviderWebDAV", {webdav}, () => {
                     window.siyuan.config.sync.webdav = webdav;
                 });
+            } else if (window.siyuan.config.sync.provider === 4) {
+                let timeout = parseInt((providerPanelElement.querySelector("#timeout") as HTMLInputElement).value, 10);
+                if (7 > timeout) {
+                    if (1 > timeout) {
+                        timeout = 30;
+                    } else {
+                        timeout = 7;
+                    }
+                }
+                if (300 < timeout) {
+                    timeout = 300;
+                }
+                (providerPanelElement.querySelector("#timeout") as HTMLInputElement).value = timeout.toString();
+                const s3 = {
+                    endpoint: (providerPanelElement.querySelector("#endpoint") as HTMLInputElement).value,
+                    accessKey: (providerPanelElement.querySelector("#accessKey") as HTMLInputElement).value,
+                    secretKey: (providerPanelElement.querySelector("#secretKey") as HTMLInputElement).value,
+                    bucket: (providerPanelElement.querySelector("#bucket") as HTMLInputElement).value,
+                    pathStyle: (providerPanelElement.querySelector("#pathStyle") as HTMLInputElement).value === "true",
+                    region: (providerPanelElement.querySelector("#region") as HTMLInputElement).value,
+                    skipTlsVerify: (providerPanelElement.querySelector("#s3SkipTlsVerify") as HTMLInputElement).value === "true",
+                    timeout: timeout,
+                };
+                fetchPost("/api/sync/setSyncProviderS3V", {s3}, () => {
+                    window.siyuan.config.sync.s3v = s3;
+                });
             }
         });
     });
@@ -271,6 +354,7 @@ export const repos = {
         <option value="0" ${window.siyuan.config.sync.provider === 0 ? "selected" : ""}>SiYuan</option>
         <option value="2" ${window.siyuan.config.sync.provider === 2 ? "selected" : ""}>S3</option>
         <option value="3" ${window.siyuan.config.sync.provider === 3 ? "selected" : ""}>WebDAV</option>
+        <option value="4" ${window.siyuan.config.sync.provider === 4 ? "selected" : ""}>S3-V</option>
     </select>
 </label>
 <div id="syncProviderPanel" class="b3-label">

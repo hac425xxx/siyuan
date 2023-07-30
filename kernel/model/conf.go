@@ -282,6 +282,14 @@ func InitConf() {
 	if nil == Conf.Sync.S3 {
 		Conf.Sync.S3 = &conf.S3{}
 	}
+
+	if nil == Conf.Sync.S3V {
+		Conf.Sync.S3V = &conf.S3{}
+	}
+
+	Conf.Sync.S3V.Endpoint = util.NormalizeEndpoint(Conf.Sync.S3V.Endpoint)
+	Conf.Sync.S3V.Timeout = util.NormalizeTimeout(Conf.Sync.S3V.Timeout)
+
 	Conf.Sync.S3.Endpoint = util.NormalizeEndpoint(Conf.Sync.S3.Endpoint)
 	Conf.Sync.S3.Timeout = util.NormalizeTimeout(Conf.Sync.S3.Timeout)
 	if nil == Conf.Sync.WebDAV {

@@ -384,6 +384,21 @@ func SetSyncProviderS3(s3 *conf.S3) (err error) {
 	return
 }
 
+
+func SetSyncProviderS3V(s3 *conf.S3) (err error) {
+	s3.Endpoint = strings.TrimSpace(s3.Endpoint)
+	s3.Endpoint = util.NormalizeEndpoint(s3.Endpoint)
+	s3.AccessKey = strings.TrimSpace(s3.AccessKey)
+	s3.SecretKey = strings.TrimSpace(s3.SecretKey)
+	s3.Bucket = strings.TrimSpace(s3.Bucket)
+	s3.Region = strings.TrimSpace(s3.Region)
+	s3.Timeout = util.NormalizeTimeout(s3.Timeout)
+
+	Conf.Sync.S3V = s3
+	Conf.Save()
+	return
+}
+
 func SetSyncProviderWebDAV(webdav *conf.WebDAV) (err error) {
 	webdav.Endpoint = strings.TrimSpace(webdav.Endpoint)
 	webdav.Endpoint = util.NormalizeEndpoint(webdav.Endpoint)
@@ -591,6 +606,9 @@ func isProviderOnline(byHand bool) (ret bool) {
 	case conf.ProviderS3:
 		checkURL = Conf.Sync.S3.Endpoint
 		skipTlsVerify = Conf.Sync.S3.SkipTlsVerify
+	case conf.ProviderS3V:
+		checkURL = Conf.Sync.S3V.Endpoint
+		skipTlsVerify = Conf.Sync.S3V.SkipTlsVerify
 	case conf.ProviderWebDAV:
 		checkURL = Conf.Sync.WebDAV.Endpoint
 		skipTlsVerify = Conf.Sync.WebDAV.SkipTlsVerify
