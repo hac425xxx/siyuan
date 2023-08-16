@@ -73,6 +73,11 @@ func watchAssets() {
 
 				lastEvent = event
 				timer.Reset(time.Millisecond * 100)
+
+				if lastEvent.Op&fsnotify.Rename == fsnotify.Rename {
+					// 索引资源文件内容
+					IndexAssetContent(lastEvent.Name)
+				}
 			case err, ok := <-assetsWatcher.Errors:
 				if !ok {
 					return
@@ -87,6 +92,9 @@ func watchAssets() {
 
 				// 重新缓存资源文件，以便使用 /资源 搜索
 				go cache.LoadAssets()
+
+				// 索引资源文件内容
+				IndexAssetContent(lastEvent.Name)
 			}
 		}
 	}()

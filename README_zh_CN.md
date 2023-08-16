@@ -40,9 +40,7 @@
 
 ## 🔮 特性
 
-### 免费
-
-所有本地功能都是免费的，即使是在商业环境下使用。
+大部分功能是免费的，即使是在商业环境下使用。
 
 * 内容块
   * 块级引用和双向链接
@@ -72,15 +70,7 @@
 * [API](API_zh_CN.md)
 * 社区集市
 
-### 付费订阅
-
-云端服务需要付费订阅。
-
-* 尊贵身份标识
-* 端到端加密数据同步和备份（包含 S3/WebDAV）
-* 云端图床服务
-* 定时微信提醒
-* 云端收集箱
+部分功能需要付费会员才能使用，更多细节请参考[定价](https://b3log.org/siyuan/pricing.html)。
 
 ## 🏗️ 架构设计和开源生态
 
@@ -213,12 +203,7 @@
 
 不支持通过第三方同步盘进行数据同步，否则可能会导致数据损坏。
 
-虽然不支持第三方同步盘，但是支持第三方云端存储服务，可在 <kbd>设置</kbd> - <kbd>云端</kbd> - <kbd>云端存储服务提供商</kbd> 中进行选择和配置，目前已经支持：
-
-* S3 兼容的对象存储服务，比如[七牛云](https://s.qiniu.com/VbQfeu)、[阿里云 OSS](https://www.aliyun.com/product/oss?userCode=yqovuas2)、[Cloudflare R2](https://www.cloudflare.com/)
-* WebDAV 协议，比如 [TeraCLOUD](https://teracloud.jp/)
-
-通过第三方云端存储服务同步数据同样是端到端加密的，第三方云端存储服务提供商无法获得我们的明文数据。
+虽然不支持第三方同步盘，但是支持对接第三方云端存储（会员特权）。
 
 另外，也可以考虑手动导出导入 Data 实现数据同步：
 
@@ -242,7 +227,7 @@
 * 如果是桌面端通过安装包安装的，可打开 <kbd>设置</kbd> - <kbd>关于</kbd> - <kbd>自动下载更新安装包</kbd> 选项，这样思源会自动下载最新版安装包并提示安装
 * 如果是通过手动安装包安装的，请再次下载安装包安装
 
-可在 <kbd>设置</kbd> - <kbd>关于</kbd> - <kbd>当前版本</kbd> 中 <kbd>检查更新</kbd>，也可以通过关注 [GitHub Releases](https://github.com/siyuan-note/siyuan/releases) 来获取新版本。
+可在 <kbd>设置</kbd> - <kbd>关于</kbd> - <kbd>当前版本</kbd> 中 <kbd>检查更新</kbd>，也可以通过关注[官方网站](https://b3log.org/siyuan/)或者 [GitHub Releases](https://github.com/siyuan-note/siyuan/releases) 来获取新版本。
 
 **注意**：切勿将工作空间放置于安装目录下，因为更新版本会清空安装目录下的所有文件
 
@@ -279,13 +264,11 @@
 
 ### 使用需要付费吗？
 
-所有本地功能都是免费的，即使是在商业环境下使用。
+大部分功能是免费的，即使是在商业环境下使用。
 
-[云端服务](https://b3log.org/siyuan/pricing.html)需要年付订阅。
+会员特权需要付费后才能使用，请参考[定价](https://b3log.org/siyuan/pricing.html)。
 
-如果你没有订阅需求但又想支持开发，欢迎进行捐赠：
-
-* [靠爱发电 - 链滴](https://ld246.com/sponsor)
+如果你没有会员特权需求但又想支持开发，欢迎进行捐赠：[靠爱发电 - 链滴](https://ld246.com/sponsor)
 
 ## 🙏 鸣谢
 
@@ -302,6 +285,7 @@
 思源的诞生离不开下列开源项目。
 
 * [https://github.com/golang/go](https://github.com/golang/go) `BSD-3-Clause License`
+* [https://github.com/sajari/docconv](https://github.com/sajari/docconv) `MIT License` 
 * [https://github.com/atotto/clipboard](https://github.com/atotto/clipboard) `BSD-3-Clause License`
 * [https://github.com/vanng822/css](https://github.com/vanng822/css) `MIT License`
 * [https://github.com/gofrs/flock](https://github.com/gofrs/flock) `BSD-3-Clause License`
@@ -339,9 +323,12 @@
 * [https://github.com/steambap/captcha](https://github.com/steambap/captcha) `MIT License`
 * [https://github.com/vmihailenco/msgpack](https://github.com/vmihailenco/msgpack) `BSD-2-Clause License`
 * [https://github.com/xrash/smetrics](https://github.com/xrash/smetrics) `MIT License`
+* [https://github.com/xuri/excelize](https://github.com/xuri/excelize) `BSD-3-Clause License`
 * [https://github.com/jgm/pandoc](https://github.com/jgm/pandoc) `GPL-2.0 License`
 * [https://github.com/microsoft/TypeScript](https://github.com/microsoft/TypeScript) `Apache-2.0 License`
 * [https://github.com/electron/electron](https://github.com/electron/electron) `MIT License`
 * [https://github.com/visjs/vis-network](https://github.com/visjs/vis-network) `Apache-2.0 License`
 * [https://github.com/mozilla/pdf.js](https://github.com/mozilla/pdf.js) `Apache-2.0 License`
 * [https://github.com/blueimp/JavaScript-MD5](https://github.com/blueimp/JavaScript-MD5) `MIT License`
+
+完整的依赖项请参考 [go.mod](https://github.com/siyuan-note/siyuan/blob/master/kernel/go.mod) 和 [package.json](https://github.com/siyuan-note/siyuan/blob/master/app/package.json)。

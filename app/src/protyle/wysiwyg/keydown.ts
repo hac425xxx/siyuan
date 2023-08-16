@@ -466,6 +466,10 @@ export const keydown = (protyle: IProtyle, editorElement: HTMLElement) => {
             (event.shiftKey && !event.altKey && isCtrl(event) && (event.key === "Home" || event.key === "End") && !isMac())) {
             const topElement = hasTopClosestByAttribute(nodeElement, "data-node-id", null);
             if (topElement) {
+                // 超级块内已选中某个块
+                topElement.querySelectorAll(".protyle-wysiwyg--select").forEach(item => {
+                    item.classList.remove("protyle-wysiwyg--select");
+                });
                 topElement.classList.add("protyle-wysiwyg--select");
                 let nextElement = event.key === "Home" ? topElement.previousElementSibling : topElement.nextElementSibling;
                 while (nextElement) {
@@ -485,6 +489,7 @@ export const keydown = (protyle: IProtyle, editorElement: HTMLElement) => {
         // ctrl+home 光标移动到顶
         if (!event.altKey && !event.shiftKey && isCtrl(event) && event.key === "Home") {
             goHome(protyle);
+            hideElements(["select"], protyle);
             event.stopPropagation();
             event.preventDefault();
             return;
@@ -492,6 +497,7 @@ export const keydown = (protyle: IProtyle, editorElement: HTMLElement) => {
         // ctrl+end 光标移动到尾
         if (!event.altKey && !event.shiftKey && isCtrl(event) && event.key === "End") {
             goEnd(protyle);
+            hideElements(["select"], protyle);
             event.stopPropagation();
             event.preventDefault();
             return;
@@ -1042,7 +1048,7 @@ export const keydown = (protyle: IProtyle, editorElement: HTMLElement) => {
                 } else {
                     actionElement = topElement;
                 }
-                openAttr(actionElement, protyle);
+                openAttr(actionElement);
             } else {
                 const oldHTML = topElement.outerHTML;
                 const name = Lute.EscapeHTMLStr(selectText);
@@ -1554,6 +1560,10 @@ export const keydown = (protyle: IProtyle, editorElement: HTMLElement) => {
             const tabSpace = window.siyuan.config.editor.codeTabSpaces === 0 ? "\t" : "".padStart(window.siyuan.config.editor.codeTabSpaces, " ");
             if (nodeElement.getAttribute("data-type") === "NodeCodeBlock" && selectText !== "") {
                 const wbrElement = document.createElement("wbr");
+                // https://github.com/siyuan-note/siyuan/issues/8911
+                if (range.startContainer.nodeType !== 3 && (range.startContainer as Element).classList.contains("protyle-action")) {
+                    range.setStart(nodeElement.querySelector(".hljs").firstChild, 0);
+                }
                 range.insertNode(wbrElement);
                 range.setStartAfter(wbrElement);
                 const oldHTML = nodeElement.outerHTML;

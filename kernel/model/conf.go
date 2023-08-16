@@ -440,9 +440,9 @@ func initLang() {
 		label := langMap["_label"].(string)
 		kernelLangs := langMap["_kernel"].(map[string]interface{})
 		for k, v := range kernelLangs {
-			num, err := strconv.Atoi(k)
-			if nil != err {
-				logging.LogErrorf("parse language configuration [%s] item [%d] failed [%s] failed: %s", p, num, err)
+			num, convErr := strconv.Atoi(k)
+			if nil != convErr {
+				logging.LogErrorf("parse language configuration [%s] item [%d] failed: %s", p, num, convErr)
 				continue
 			}
 			kernelMap[num] = v.(string)
@@ -723,14 +723,14 @@ func IsSubscriber() bool {
 	// return nil != Conf.User && (-1 == Conf.User.UserSiYuanProExpireTime || 0 < Conf.User.UserSiYuanProExpireTime) && 0 == Conf.User.UserSiYuanSubscriptionStatus
 }
 
-func IsThirdPartySyncPaid() bool {
+func IsOneTimePaid() bool {
 	if IsSubscriber() {
 		return true
 	}
 	return true
 	// return nil != Conf.User // Sign in to use S3/WebDAV data sync https://github.com/siyuan-note/siyuan/issues/8779
 	// TODO https://github.com/siyuan-note/siyuan/issues/8780
-	// return nil != Conf.User && 1 == Conf.User.UserSiYuanThirdPartySyncPayStatus
+	// return nil != Conf.User && 1 == Conf.User.UserSiYuanOneTimePayStatus
 }
 
 const (

@@ -247,17 +247,17 @@ export class WYSIWYG {
                     }
                 } else {
                     selectElements.forEach((item, index) => {
-                        const topElement = getTopAloneElement(item);
+                        // 复制列表项中的块会变为复制列表项，因此不能使用 getTopAloneElement https://github.com/siyuan-note/siyuan/issues/8925
                         if (isRefText && index === 0) {
-                            const cloneElement = topElement.cloneNode(true) as HTMLElement;
+                            const cloneElement = item.cloneNode(true) as HTMLElement;
                             const cloneEditElement = getContenteditableElement(cloneElement);
                             if (cloneEditElement) {
-                                cloneEditElement.insertAdjacentHTML("beforeend", ` <span data-type="block-ref" data-subtype="s" data-id="${topElement.getAttribute("data-node-id")}">*</span>`);
+                                cloneEditElement.insertAdjacentHTML("beforeend", ` <span data-type="block-ref" data-subtype="s" data-id="${item.getAttribute("data-node-id")}">*</span>`);
                             }
                             html += removeEmbed(cloneElement);
                             selectElements[0].removeAttribute("data-reftext");
                         } else {
-                            html += removeEmbed(topElement);
+                            html += removeEmbed(item);
                         }
                     });
                 }
@@ -1235,6 +1235,9 @@ export class WYSIWYG {
 
         let beforeContextmenuRange: Range;
         this.element.addEventListener("contextmenu", (event: MouseEvent & { detail: any }) => {
+            if (event.shiftKey) {
+                return;
+            }
             event.stopPropagation();
             event.preventDefault();
             const x = event.clientX || event.detail.x;
@@ -1511,12 +1514,12 @@ export class WYSIWYG {
 
         this.element.addEventListener("keyup", (event) => {
             const range = getEditorRange(this.element).cloneRange();
+            const nodeElement = hasClosestBlock(range.startContainer);
             if (event.key !== "PageUp" && event.key !== "PageDown" && event.key !== "Home" && event.key !== "End" && event.key.indexOf("Arrow") === -1 &&
                 event.key !== "Alt" && event.key !== "Shift" && event.key !== "CapsLock" && event.key !== "Escape" && event.key !== "Meta" && !/^F\d{1,2}$/.test(event.key) &&
                 (!event.isComposing || (event.isComposing && range.toString() !== "")) // https://github.com/siyuan-note/siyuan/issues/4341
             ) {
                 // 搜狗输入法不走 keydown，需重新记录历史状态
-                const nodeElement = hasClosestBlock(range.startContainer);
                 if (nodeElement && typeof protyle.wysiwyg.lastHTMLs[nodeElement.getAttribute("data-node-id")] === "undefined") {
                     range.insertNode(document.createElement("wbr"));
                     protyle.wysiwyg.lastHTMLs[nodeElement.getAttribute("data-node-id")] = nodeElement.outerHTML;
@@ -1537,7 +1540,6 @@ export class WYSIWYG {
             }
 
             if (event.eventPhase !== 3 && !event.shiftKey && (event.key.indexOf("Arrow") > -1 || event.key === "Home" || event.key === "End" || event.key === "PageUp" || event.key === "PageDown") && !event.isComposing) {
-                const nodeElement = hasClosestBlock(range.startContainer);
                 if (nodeElement) {
                     this.setEmptyOutline(protyle, nodeElement);
                     if (range.toString() === "") {
@@ -1545,6 +1547,26 @@ export class WYSIWYG {
                     }
                 }
                 event.stopPropagation();
+            }
+
+            // https://github.com/siyuan-note/siyuan/issues/8918
+            if ((event.key === "ArrowLeft" || event.key === "ArrowRight" ||
+                    event.key === "Alt" || event.key === "Shift") &&    // 选中后 alt+shift+arrowRight 会导致光标和选中块不一致
+                nodeElement && !nodeElement.classList.contains("protyle-wysiwyg--select")) {
+                const selectElements = Array.from(protyle.wysiwyg.element.querySelectorAll(".protyle-wysiwyg--select"));
+                let containRange = false;
+                selectElements.find(item => {
+                    if (item.contains(range.startContainer)) {
+                        containRange = true;
+                        return true;
+                    }
+                });
+                if (!containRange && selectElements.length > 0) {
+                    selectElements.forEach(item => {
+                        item.classList.remove("protyle-wysiwyg--select");
+                    });
+                    nodeElement.classList.add("protyle-wysiwyg--select");
+                }
             }
         });
 
@@ -1618,10 +1640,16 @@ export class WYSIWYG {
             const range = getEditorRange(this.element);
             // 需放在嵌入块之前，否则嵌入块内的引用、链接、pdf 双链无法点击打开 https://ld246.com/article/1630479789513
             const blockRefElement = hasClosestByAttribute(event.target, "data-type", "block-ref");
-            const aElement = hasClosestByAttribute(event.target, "data-type", "a");
-            if (blockRefElement ||
-                (aElement && aElement.getAttribute("data-href").startsWith("siyuan://blocks/"))
-            ) {
+            const aElement = hasClosestByAttribute(event.target, "data-type", "a") || hasClosestByAttribute(event.target, "data-type", "url");
+            let aLink = "";
+            if (aElement) {
+                if (aElement.classList.contains("av__celltext")) {
+                    aLink = aElement.textContent.trim();
+                } else {
+                    aLink = aElement.getAttribute("data-href");
+                }
+            }
+            if (blockRefElement || aLink.startsWith("siyuan://blocks/")) {
                 event.stopPropagation();
                 event.preventDefault();
                 hideElements(["dialog", "toolbar"], protyle);
@@ -1633,7 +1661,7 @@ export class WYSIWYG {
                 if (blockRefElement) {
                     refBlockId = blockRefElement.getAttribute("data-id");
                 } else if (aElement) {
-                    refBlockId = aElement.getAttribute("data-href").substring(16, 38);
+                    refBlockId = aLink.substring(16, 38);
                 }
 
                 fetchPost("/api/block/checkBlockFold", {id: refBlockId}, (foldResponse) => {
@@ -1643,7 +1671,7 @@ export class WYSIWYG {
                     hideKeyboardToolbar();
                     /// #else
                     if (aElement) {
-                        window.open(aElement.getAttribute("data-href"));
+                        window.open(aLink);
                         return;
                     }
                     if (event.shiftKey) {
@@ -1720,7 +1748,7 @@ export class WYSIWYG {
             if (aElement && !event.altKey) {
                 event.stopPropagation();
                 event.preventDefault();
-                const linkAddress = Lute.UnEscapeHTMLStr(aElement.getAttribute("data-href"));
+                const linkAddress = Lute.UnEscapeHTMLStr(aLink);
                 /// #if MOBILE
                 openByMobile(linkAddress);
                 /// #else
@@ -1929,7 +1957,7 @@ export class WYSIWYG {
                         }
                         hideElements(["gutter"], protyle);
                     } else if (event.shiftKey) {
-                        openAttr(actionElement.parentElement, protyle);
+                        openAttr(actionElement.parentElement);
                     } else if (ctrlIsPressed) {
                         zoomOut({protyle, id: actionElement.parentElement.getAttribute("data-node-id")});
                     } else {
@@ -1945,15 +1973,7 @@ export class WYSIWYG {
                             actionElement.parentElement.setAttribute("updated", dayjs().format("YYYYMMDDHHmmss"));
                             updateTransaction(protyle, actionElement.parentElement.getAttribute("data-node-id"), actionElement.parentElement.outerHTML, html);
                         } else {
-                            protyle.gutter.renderMenu(protyle, actionElement.parentElement);
-                            /// #if MOBILE
-                            window.siyuan.menus.menu.fullscreen();
-                            /// #else
-                            window.siyuan.menus.menu.popup({
-                                x: event.clientX - 16,
-                                y: event.clientY - 16
-                            }, true);
-                            /// #endif
+                            zoomOut({protyle, id: actionElement.parentElement.getAttribute("data-node-id")});
                         }
                     }
                 }
@@ -2019,6 +2039,7 @@ export class WYSIWYG {
                     } else if (lastEditElement) {
                         range.selectNodeContents(lastEditElement);
                         range.collapse(false);
+                        focusByRange(range);
                     }
                 }
             }
